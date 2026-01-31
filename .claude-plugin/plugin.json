@@ -1,26 +1,21 @@
 {
   "name": "jitrl",
-  "description": "Experience-based learning that gives Claude persistent memory of past successes and failures. Automatically learns from your coding sessions.",
   "version": "1.0.0",
+  "description": "Experience-based learning that gives Claude persistent memory of past successes and failures. Automatically learns from your coding sessions.",
+  "homepage": "https://github.com/babushkai/jitrl-skill",
   "author": {
     "name": "BabushkaML",
     "url": "https://github.com/babushkai"
   },
-  "homepage": "https://github.com/babushkai/jitrl-skill",
   "repository": {
     "type": "git",
     "url": "https://github.com/babushkai/jitrl-skill.git"
   },
   "license": "MIT",
-  "keywords": [
-    "memory",
-    "learning",
-    "experience-replay",
-    "continual-learning",
-    "jitrl"
-  ],
-  "dependencies": {
-    "python": ">=3.8",
-    "packages": ["faiss-cpu", "numpy"]
+  "mcpServers": {
+    "jitrl": {
+      "command": "npx",
+      "args": ["-y", "@babushkai/jitrl-mcp"]
+    }
   }
 }

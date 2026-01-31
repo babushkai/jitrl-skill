@@ -1,0 +1,37 @@
+{
+  "name": "@babushkai/jitrl-mcp",
+  "version": "1.0.0",
+  "description": "JitRL: Experience-based learning MCP server for Claude Code",
+  "main": "dist/index.js",
+  "bin": {
+    "jitrl-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "keywords": [
+    "claude-code",
+    "mcp",
+    "jitrl",
+    "learning",
+    "memory"
+  ],
+  "author": "BabushkaML",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/babushkai/jitrl-skill.git"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "hnswlib-node": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}

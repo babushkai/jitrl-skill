@@ -1,6 +1,10 @@
 {
   "name": "jitrl-marketplace",
   "description": "JitRL: Experience-based learning plugins for Claude Code",
+  "owner": {
+    "name": "BabushkaML",
+    "url": "https://github.com/babushkai"
+  },
   "plugins": [
     {
       "name": "jitrl",
@@ -10,8 +14,11 @@
         "type": "local",
         "path": "."
       },
-      "keywords": ["memory", "learning", "experience", "continual-learning"],
-      "author": "BabushkaML"
+      "author": {
+        "name": "BabushkaML",
+        "url": "https://github.com/babushkai"
+      },
+      "keywords": ["memory", "learning", "experience", "continual-learning"]
     }
   ]
 }

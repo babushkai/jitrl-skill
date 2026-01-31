@@ -1,30 +1,8 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Dependencies
+node_modules/
 
-# Virtual environments
-.venv/
-venv/
-ENV/
-env/
+# Build output
+dist/
 
 # IDE
 .idea/
@@ -33,13 +11,16 @@ env/
 *.swo
 *~
 
-# JitRL data (user-specific)
-.claude-jitrl/
-
 # OS
 .DS_Store
 Thumbs.db
 
-# Test outputs
+# Logs
 *.log
+npm-debug.log*
+
+# Local data (user-specific)
+.claude-jitrl/
+
+# Test outputs
 test_output/

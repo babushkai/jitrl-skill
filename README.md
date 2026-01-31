@@ -2,13 +2,15 @@
 
 > **Experience-based learning that makes Claude Code smarter with every session**
 
-[![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blue)](https://code.claude.com/docs/en/plugins)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-blue)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 
 JitRL gives Claude Code persistent memory of past successes and failures. When you encounter a problem, JitRL automatically surfaces relevant experiences from your history.
 
-## Installation (One Command)
+## Installation
+
+### Via Plugin Marketplace
 
 ```bash
 # Add the marketplace
@@ -18,15 +20,19 @@ JitRL gives Claude Code persistent memory of past successes and failures. When y
 /plugin install jitrl@babushkai-jitrl-skill
 ```
 
-**That's it.** The plugin automatically:
-- Registers hooks for experience capture
-- Injects relevant context on each prompt
-- Stores and evaluates sessions
+### Manual MCP Configuration
 
-### Prerequisites
+Add to your Claude Code MCP settings:
 
-```bash
-pip install faiss-cpu numpy
+```json
+{
+  "mcpServers": {
+    "jitrl": {
+      "command": "npx",
+      "args": ["-y", "@babushkai/jitrl-mcp"]
+    }
+  }
+}
 ```
 
 ## How It Works
@@ -51,25 +57,62 @@ pip install faiss-cpu numpy
 └─────────────────────────────────────────────────────┘
 ```
 
-## Commands
+## MCP Tools
 
-After installation, these commands are available:
+| Tool | Description |
+|------|-------------|
+| `jitrl_search` | Search for similar past experiences |
+| `jitrl_store` | Store a new experience triplet |
+| `jitrl_inject` | Get context injection for current prompt |
+| `jitrl_stats` | View experience statistics |
+| `jitrl_clear` | Clear project memory |
 
-| Command | Description |
+## Algorithm (from Paper)
+
+Based on ["JitRL: Just-in-Time Reinforcement Learning for LLM Agent"](https://arxiv.org/abs/2501.18510).
+
+### Key Features Implemented
+
+| Feature | Description |
 |---------|-------------|
-| `/jitrl:init` | Initialize for current project |
-| `/jitrl:stats` | Show experience statistics |
-| `/jitrl:search [query]` | Search similar experiences |
+| **Dual Vector Search** | History index (0.25) + State index (0.75) |
+| **Jaccard N-gram** | History unigrams (0.3) + State 4-grams (0.7) |
+| **Discounted Returns** | γ^t weighted future rewards (γ=0.95) |
+| **Normalized Advantages** | Divide by max positive advantage |
+| **Episode Weighting** | 1.0 → 1.5 over 50 episodes |
+| **Dynamic Threshold** | Decreases with step count |
 
-## What Gets Stored
+### Why MCP Server?
 
-Every interaction is stored as a **Policy Triplet**:
+| Approach | Startup Time | Memory |
+|----------|-------------|--------|
+| Python hooks | ~500ms/call | New process each time |
+| **MCP Server** | **~1ms/call** | **Persistent process** |
 
-| Component | Description | Example |
-|-----------|-------------|---------|
-| **State** | Current context | Files read, error messages, goal |
-| **Action** | What Claude did | Edit, Write, Bash, etc. |
-| **Outcome** | Result | Success/failure, user feedback |
+The MCP server stays running, so there's no cold-start penalty.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│  Claude Code                                │
+│  ┌───────────────────────────────────────┐  │
+│  │  MCP Client                           │  │
+│  └──────────────┬────────────────────────┘  │
+│                 │                           │
+│                 ▼                           │
+│  ┌───────────────────────────────────────┐  │
+│  │  JitRL MCP Server (persistent)        │  │
+│  │  ┌─────────────┐  ┌─────────────────┐ │  │
+│  │  │ History     │  │ State           │ │  │
+│  │  │ HNSW Index  │  │ HNSW Index      │ │  │
+│  │  └─────────────┘  └─────────────────┘ │  │
+│  │  ┌─────────────────────────────────┐  │  │
+│  │  │ Experience Store (JSON)         │  │  │
+│  │  └─────────────────────────────────┘  │  │
+│  └───────────────────────────────────────┘  │
+└─────────────────────────────────────────────┘
+```
 
 ## Scoring System
 
@@ -81,74 +124,40 @@ Every interaction is stored as a **Policy Triplet**:
 | Failure with learning | -2 |
 | Complete failure | -5 |
 
-## Configuration
-
-Create `~/.claude-jitrl/config.yaml`:
-
-```yaml
-similarity_threshold: 0.6    # Min similarity (0.0-1.0)
-max_experiences_per_search: 5
-max_experiences: 10000
-experience_ttl_days: 90
-cache_embeddings: true
-```
-
-## Plugin Structure
-
-```
-jitrl-skill/
-├── .claude-plugin/
-│   ├── plugin.json      # Plugin manifest
-│   └── marketplace.json # For discoverability
-├── skills/
-│   └── jitrl-memory/
-│       └── SKILL.md     # Main skill definition
-├── commands/
-│   ├── init.md          # /jitrl:init
-│   ├── stats.md         # /jitrl:stats
-│   └── search.md        # /jitrl:search
-├── hooks/
-│   └── hooks.json       # Auto-registered hooks
-└── scripts/
-    ├── jitrl.py         # Core implementation
-    └── hooks/           # Hook handlers
-```
-
-## Manual Installation (Alternative)
-
-If you prefer not to use the marketplace:
+## Development
 
 ```bash
-# Clone directly to plugins directory
-git clone https://github.com/babushkai/jitrl-skill ~/.claude/plugins/jitrl
+# Clone
+git clone https://github.com/babushkai/jitrl-skill
+cd jitrl-skill
 
-# Or test locally
-claude --plugin-dir ./jitrl-skill
+# Install dependencies
+npm install
+
+# Build
+npm run build
+
+# Run locally
+npm start
 ```
 
-## Based on Research
+## Note on Logit Adjustment
 
-JitRL is inspired by ["JitRL: Just-in-Time Reinforcement Learning for LLM Agent"](https://arxiv.org/abs/2501.18510).
+The original JitRL paper modifies output logits directly:
 
-Key innovations:
-- **No Fine-tuning**: Uses context injection instead of model updates
-- **Experience Replay**: Stores and retrieves relevant past experiences
-- **Advantage Calculation**: Ranks actions by relative success rate
+```
+π*(a|s) = π₀(a|s) · exp(A(s,a) / β)
+```
 
-## Expected Results
+Since Claude Code doesn't expose logprobs, we use **context injection** as an approximation. This works because Claude effectively follows contextual hints about what worked/failed before.
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Repeated explanations | Every time | ~60% less |
-| Error fix attempts | 3-5 tries | 1-2 tries |
-| Failed pattern repetition | Frequent | Near zero |
+See [COMPARISON.md](COMPARISON.md) for detailed analysis.
 
 ## Contributing
 
 Contributions welcome! Please:
 - Open issues for bugs or feature requests
 - Submit PRs for improvements
-- Help improve documentation
 
 ## License
 
@@ -158,4 +167,4 @@ MIT License - see [LICENSE](LICENSE)
 
 - **GitHub**: https://github.com/babushkai/jitrl-skill
 - **JitRL Paper**: https://arxiv.org/abs/2501.18510
-- **Claude Code Plugins**: https://code.claude.com/docs/en/plugins
+- **MCP Protocol**: https://modelcontextprotocol.io
