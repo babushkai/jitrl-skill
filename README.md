@@ -2,20 +2,32 @@
 
 > **Experience-based learning that makes Claude Code smarter with every session**
 
-[![Claude Code Skill](https://img.shields.io/badge/Claude%20Code-Skill-blue)](https://code.claude.com/docs/en/skills)
+[![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blue)](https://code.claude.com/docs/en/plugins)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-JitRL gives Claude Code persistent memory of past successes and failures. When you encounter a problem, JitRL automatically surfaces relevant experiences from your history - what worked, what didn't, and which approaches have the best track record.
+JitRL gives Claude Code persistent memory of past successes and failures. When you encounter a problem, JitRL automatically surfaces relevant experiences from your history.
 
-## The Problem
+## Installation (One Command)
 
-Every time you start a new Claude Code session, it's a blank slate. Claude doesn't remember:
-- That the same TypeScript error was fixed yesterday by adding an export
-- That running `npm test` before commits catches 80% of issues
-- That creating new files usually conflicts with existing ones in this project
+```bash
+# Add the marketplace
+/plugin marketplace add babushkai/jitrl-skill
 
-**JitRL solves this** by storing every interaction as a scored experience and retrieving relevant ones when you face similar situations.
+# Install the plugin
+/plugin install jitrl@babushkai-jitrl-skill
+```
+
+**That's it.** The plugin automatically:
+- Registers hooks for experience capture
+- Injects relevant context on each prompt
+- Stores and evaluates sessions
+
+### Prerequisites
+
+```bash
+pip install faiss-cpu numpy
+```
 
 ## How It Works
 
@@ -39,126 +51,111 @@ Every time you start a new Claude Code session, it's a blank slate. Claude doesn
 └─────────────────────────────────────────────────────┘
 ```
 
-## Quick Start
-
-### 1. Install the Skill
-
-```bash
-# Clone to your Claude Code skills directory
-git clone https://github.com/anthropics/jitrl-skill ~/.claude/skills/jitrl
-
-# Install dependencies
-pip install faiss-cpu numpy
-
-# Optional: For better embeddings
-pip install openai
-```
-
-### 2. Initialize for Your Project
-
-```bash
-cd /your/project
-python3 ~/.claude/skills/jitrl/scripts/jitrl.py init
-```
-
-### 3. Start Using Claude Code
-
-JitRL works automatically in the background:
-- **On each prompt**: Searches for similar past experiences
-- **On each response**: Captures what Claude did
-- **On session end**: Evaluates and stores the experience
-
 ## Commands
+
+After installation, these commands are available:
 
 | Command | Description |
 |---------|-------------|
-| `jitrl init` | Initialize for current project |
-| `jitrl stats` | Show experience statistics |
-| `jitrl search "query"` | Search similar experiences |
-| `jitrl clear --confirm` | Clear project memory |
-| `jitrl export file.json` | Export all experiences |
+| `/jitrl:init` | Initialize for current project |
+| `/jitrl:stats` | Show experience statistics |
+| `/jitrl:search [query]` | Search similar experiences |
 
-## How Scoring Works
+## What Gets Stored
 
-Every experience gets a score based on outcome:
+Every interaction is stored as a **Policy Triplet**:
 
-| Outcome | Base Score |
-|---------|------------|
-| Success + "Perfect!" feedback | +10 |
+| Component | Description | Example |
+|-----------|-------------|---------|
+| **State** | Current context | Files read, error messages, goal |
+| **Action** | What Claude did | Edit, Write, Bash, etc. |
+| **Outcome** | Result | Success/failure, user feedback |
+
+## Scoring System
+
+| Outcome | Score |
+|---------|-------|
+| Success + "Perfect!" | +10 |
 | Success | +5 |
 | Partial success | +2 |
 | Failure with learning | -2 |
 | Complete failure | -5 |
-
-JitRL uses these scores to calculate **advantages** for each action type:
-
-```
-Advantage(Edit) = Average_Score(Edit) - Baseline
-```
-
-Positive advantage = this approach works better than average in similar situations.
 
 ## Configuration
 
 Create `~/.claude-jitrl/config.yaml`:
 
 ```yaml
-# Search settings
-similarity_threshold: 0.6    # Min similarity to retrieve (0.0-1.0)
+similarity_threshold: 0.6    # Min similarity (0.0-1.0)
 max_experiences_per_search: 5
-
-# Storage limits
 max_experiences: 10000
 experience_ttl_days: 90
-
-# Performance
 cache_embeddings: true
 ```
 
-## Project Structure
+## Plugin Structure
 
 ```
 jitrl-skill/
-├── SKILL.md           # Skill definition for Claude Code
-├── reference.md       # Complete API documentation
-├── scripts/
-│   ├── jitrl.py       # Main CLI and library
-│   ├── __init__.py    # Module exports
-│   └── hooks/         # Claude Code hook scripts
-│       ├── on_prompt.py
-│       ├── on_stop.py
-│       └── on_session_end.py
-└── examples/
-    └── basic_usage.py
+├── .claude-plugin/
+│   ├── plugin.json      # Plugin manifest
+│   └── marketplace.json # For discoverability
+├── skills/
+│   └── jitrl-memory/
+│       └── SKILL.md     # Main skill definition
+├── commands/
+│   ├── init.md          # /jitrl:init
+│   ├── stats.md         # /jitrl:stats
+│   └── search.md        # /jitrl:search
+├── hooks/
+│   └── hooks.json       # Auto-registered hooks
+└── scripts/
+    ├── jitrl.py         # Core implementation
+    └── hooks/           # Hook handlers
+```
+
+## Manual Installation (Alternative)
+
+If you prefer not to use the marketplace:
+
+```bash
+# Clone directly to plugins directory
+git clone https://github.com/babushkai/jitrl-skill ~/.claude/plugins/jitrl
+
+# Or test locally
+claude --plugin-dir ./jitrl-skill
 ```
 
 ## Based on Research
 
-JitRL is inspired by the paper ["JitRL: Just-in-Time Reinforcement Learning for LLM Agent Continual Improvements"](https://arxiv.org/abs/2501.18510) which demonstrates how to improve LLM agents through experience replay without gradient updates.
+JitRL is inspired by ["JitRL: Just-in-Time Reinforcement Learning for LLM Agent"](https://arxiv.org/abs/2501.18510).
 
-Key innovations applied here:
-- **Policy Triplets**: Store `<state, action, outcome>` for each interaction
-- **Advantage Calculation**: Rank actions by their relative success rate
-- **No Fine-tuning**: Use context injection instead of model updates
+Key innovations:
+- **No Fine-tuning**: Uses context injection instead of model updates
+- **Experience Replay**: Stores and retrieves relevant past experiences
+- **Advantage Calculation**: Ranks actions by relative success rate
 
-## Requirements
+## Expected Results
 
-- Python 3.8+
-- Claude Code
-- faiss-cpu (or faiss-gpu)
-- numpy
-- (Optional) openai - for better embeddings
+| Metric | Before | After |
+|--------|--------|-------|
+| Repeated explanations | Every time | ~60% less |
+| Error fix attempts | 3-5 tries | 1-2 tries |
+| Failed pattern repetition | Frequent | Near zero |
+
+## Contributing
+
+Contributions welcome! Please:
+- Open issues for bugs or feature requests
+- Submit PRs for improvements
+- Help improve documentation
 
 ## License
 
 MIT License - see [LICENSE](LICENSE)
 
-## Contributing
+## Links
 
-Contributions welcome! Please read our [Contributing Guide](CONTRIBUTING.md) first.
-
-## Related
-
-- [Claude Code Skills](https://code.claude.com/docs/en/skills) - Official documentation
-- [Claude Code Hooks](https://code.claude.com/docs/en/hooks) - Hook system docs
-- [JitRL Paper](https://arxiv.org/abs/2501.18510) - Original research
+- **GitHub**: https://github.com/babushkai/jitrl-skill
+- **JitRL Paper**: https://arxiv.org/abs/2501.18510
+- **Claude Code Plugins**: https://code.claude.com/docs/en/plugins

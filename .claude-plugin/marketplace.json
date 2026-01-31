@@ -1,0 +1,17 @@
+{
+  "name": "jitrl-marketplace",
+  "description": "JitRL: Experience-based learning plugins for Claude Code",
+  "plugins": [
+    {
+      "name": "jitrl",
+      "description": "Experience-based learning that gives Claude persistent memory. Automatically learns from your coding sessions - what worked, what failed, and which approaches have the best track record.",
+      "version": "1.0.0",
+      "source": {
+        "type": "local",
+        "path": "."
+      },
+      "keywords": ["memory", "learning", "experience", "continual-learning"],
+      "author": "BabushkaML"
+    }
+  ]
+}
