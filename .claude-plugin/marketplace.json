@@ -16,7 +16,7 @@
         "name": "BabushkaML",
         "email": "babushkai@example.com"
       },
-      "source": ".",
+      "source": "./plugins/jitrl",
       "category": "productivity"
     }
   ]
