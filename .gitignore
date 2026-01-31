@@ -1,8 +1,8 @@
 # Dependencies
 node_modules/
 
-# Build output
-dist/
+# Note: dist/ is committed for plugin distribution
+# dist/
 
 # IDE
 .idea/

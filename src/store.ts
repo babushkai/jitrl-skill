@@ -50,8 +50,8 @@ interface StoreMetadata {
 }
 
 // Simple embedding using hash-based approach (no external API needed)
-function simpleEmbed(text: string, dim: number = 384): Float32Array {
-  const vec = new Float32Array(dim);
+function simpleEmbed(text: string, dim: number = 384): number[] {
+  const vec: number[] = new Array(dim).fill(0);
   const words = text.toLowerCase().split(/\s+/);
 
   for (let i = 0; i < words.length && i < 500; i++) {

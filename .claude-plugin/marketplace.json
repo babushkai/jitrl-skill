@@ -1,24 +1,23 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "jitrl-marketplace",
+  "version": "1.0.0",
   "description": "JitRL: Experience-based learning plugins for Claude Code",
   "owner": {
     "name": "BabushkaML",
-    "url": "https://github.com/babushkai"
+    "email": "babushkai@example.com"
   },
   "plugins": [
     {
       "name": "jitrl",
       "description": "Experience-based learning that gives Claude persistent memory. Automatically learns from your coding sessions - what worked, what failed, and which approaches have the best track record.",
       "version": "1.0.0",
-      "source": {
-        "type": "local",
-        "path": "."
-      },
       "author": {
         "name": "BabushkaML",
-        "url": "https://github.com/babushkai"
+        "email": "babushkai@example.com"
       },
-      "keywords": ["memory", "learning", "experience", "continual-learning"]
+      "source": ".",
+      "category": "productivity"
     }
   ]
 }
