@@ -10,13 +10,8 @@
   "plugins": [
     {
       "name": "jitrl",
-      "description": "Experience-based learning that gives Claude persistent memory. Automatically learns from your coding sessions - what worked, what failed, and which approaches have the best track record.",
-      "version": "1.0.0",
-      "author": {
-        "name": "BabushkaML",
-        "email": "babushkai@example.com"
-      },
-      "source": "plugins/jitrl",
+      "description": "Experience-based learning that gives Claude persistent memory of past successes and failures",
+      "source": "./plugins/jitrl",
       "category": "productivity"
     }
   ]
